@@ -4,6 +4,7 @@ import "gorm.io/gorm"
 
 type Player struct {
 	gorm.Model
-	Name  string
-	Votes []Vote
+	Name   string
+	Enable bool
+	Votes  []Vote
 }
