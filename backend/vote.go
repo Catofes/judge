@@ -27,7 +27,7 @@ type Vote struct {
 	gorm.Model
 	Scores    Score `gorm:"embedded"`
 	PlayerID  uint
-	VoteBy    uint
+	VoteBy    int
 	IsMain    bool
 	CreatedAt time.Time
 	UpdatedAt time.Time

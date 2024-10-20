@@ -11,13 +11,13 @@ func (s *server) bindHandler() {
 	s.e.HEAD("/", s.checkLogin)
 	s.e.GET("/", s.getRefereeInfo)
 	s.e.GET("/player", s.listPlayers)
+	s.e.GET("/player/:id", s.getVote)
 	s.e.POST("/player/:id", s.vote)
 	s.e.GET("/admin/switch/:id", s.playerSwitch)
 }
 
 func (s *server) checkLogin(c echo.Context) error {
-	cc := c.(CustomContext)
-	return c.JSON(200, cc.referee)
+	return c.NoContent(204)
 }
 
 func (s *server) getRefereeInfo(c echo.Context) error {
@@ -33,22 +33,34 @@ func (s *server) listPlayers(c echo.Context) error {
 		log.Printf("db error: %s", result.Error)
 		return result.Error
 	} else {
-		if cc.referee.Admin == false {
-			for _, p := range Players {
-				p.Votes = nil
+		if !cc.referee.Admin {
+			for k := range Players {
+				Players[k].Votes = nil
 			}
 		} else {
-			for _, p := range Players {
-				tmp := make([]Vote, 0)
-				for _, v := range p.Votes {
-					if v.IsMain {
-						tmp = append(tmp, v)
-					}
-				}
-				p.Votes = tmp
+			for k, p := range Players {
+				Players[k].Votes = p.GetScore()
 			}
 		}
 		return cc.JSON(200, Players)
+	}
+}
+
+func (s *server) getVote(c echo.Context) error {
+	cc := c.(CustomContext)
+	vote := &Vote{
+		VoteBy: int(cc.referee.ID),
+	}
+	if id, err := strconv.Atoi(cc.Param("id")); err != nil {
+		return echo.ErrForbidden
+	} else {
+		vote.PlayerID = uint(id)
+	}
+	cc.db.First(vote)
+	if vote.ID != 0 {
+		return cc.JSON(200, vote)
+	} else {
+		return echo.ErrNotFound
 	}
 }
 
@@ -64,27 +76,28 @@ func (s *server) vote(c echo.Context) error {
 	if player.Name == "" {
 		return echo.ErrNotFound
 	}
+	vote := &Vote{
+		PlayerID: player.ID,
+		VoteBy:   int(cc.referee.ID),
+	}
+	cc.db.First(vote)
 	score := Score{}
 	score.loadFromForm(cc)
-	vote := Vote{
-		VoteBy: cc.referee.ID,
-		Scores: score,
-	}
+	vote.Scores = score
 	if cc.referee.Main {
 		vote.IsMain = true
 	}
-	player.Votes = append(player.Votes, vote)
-	if result := cc.db.Save(player); result.Error != nil {
+	if result := cc.db.Save(vote); result.Error != nil {
 		log.Printf("db error: %s", result.Error)
 		return echo.ErrBadGateway
 	} else {
-		return cc.NoContent(204)
+		return cc.JSON(200, vote)
 	}
 }
 
 func (s *server) playerSwitch(c echo.Context) error {
 	cc := c.(CustomContext)
-	if cc.referee.Admin == false {
+	if !cc.referee.Admin {
 		return echo.ErrForbidden
 	}
 	player := &Player{}
