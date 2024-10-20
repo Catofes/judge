@@ -4,7 +4,7 @@ import "gorm.io/gorm"
 
 type Player struct {
 	gorm.Model
-	Name   string
+	Name   string `gorm:"unique"`
 	Enable bool
 	Votes  []Vote
 }

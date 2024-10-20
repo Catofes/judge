@@ -1,35 +1,37 @@
 package main
 
 import (
-	"encoding/csv"
 	"log"
-	"os"
+
+	"github.com/tealeg/xlsx/v3"
 )
 
 func importPlayer(path, dbpath string) error {
-	file, err := os.Open(path)
+	wb, err := xlsx.OpenFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	reader := csv.NewReader(file)
-	reader.FieldsPerRecord = -1
-	data, err := reader.ReadAll()
-	if err != nil {
-		log.Fatal(err)
+	sh, ok := wb.Sheet["Sheet1"]
+	if !ok {
+		log.Fatal("Sheet1 does not exist")
 	}
-	players := make([]Player, 0)
-	for _, row := range data[1:] {
-		p := Player{
-			Name:   row[0],
-			Enable: false,
+	Players := make([]Player, 0)
+
+	for i := 1; i < sh.MaxRow; i++ {
+		row, err := sh.Row(i)
+		if err != nil {
+			log.Fatal(err)
 		}
-		players = append(players, p)
+		p := &Player{
+			Name: row.GetCell(0).Value,
+		}
+		Players = append(Players, *p)
 	}
 	d := (&db{}).init(dbpath).Begin()
 	if d.Error != nil {
 		log.Fatal(d.Error)
 	}
-	d.Create(players)
+	d.Create(Players)
 	if d.Error != nil {
 		log.Fatal(d.Error)
 	}
@@ -37,35 +39,37 @@ func importPlayer(path, dbpath string) error {
 	return d.Error
 }
 
-func flushAll(dbpath string) error {
-	d := (&db{}).init(dbpath)
-	d.Where("1 = 1").Delete(&Player{})
-	d.Where("1 = 1").Delete(&Referee{})
-	d.Where("1 = 1").Delete(&Vote{})
-	return d.Error
-}
+// func flushAll(dbpath string) error {
+// 	d := (&db{}).init(dbpath)
+// 	d.Where("1 = 1").Delete(&Player{})
+// 	d.Where("1 = 1").Delete(&Referee{})
+// 	d.Where("1 = 1").Delete(&Vote{})
+// 	return d.Error
+// }
 
 func importReferee(path, dbpath string) error {
-	file, err := os.Open(path)
+	wb, err := xlsx.OpenFile(path)
 	if err != nil {
 		log.Fatal(err)
 	}
-	reader := csv.NewReader(file)
-	reader.FieldsPerRecord = -1
-	data, err := reader.ReadAll()
-	if err != nil {
-		log.Fatal(err)
+	sh, ok := wb.Sheet["Sheet1"]
+	if !ok {
+		log.Fatal("Sheet1 does not exist")
 	}
-	referee := make([]Referee, 0)
-	for _, row := range data[1:] {
-		r := Referee{
-			Name: row[0],
-			Key:  row[1],
+	referee := make([]*Referee, 0)
+	for i := 1; i < sh.MaxRow; i++ {
+		row, err := sh.Row(i)
+		if err != nil {
+			log.Fatal(err)
 		}
-		if row[2] == "是" {
+		r := &Referee{
+			Name: row.GetCell(0).Value,
+			Key:  row.GetCell(1).Value,
+		}
+		if row.GetCell(2).Value == "是" {
 			r.Main = true
 		}
-		if row[3] == "是" {
+		if row.GetCell(3).Value == "是" {
 			r.Admin = true
 		}
 		referee = append(referee, r)

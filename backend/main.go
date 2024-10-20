@@ -43,12 +43,12 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:  "data",
-					Value: "./player.csv",
+					Value: "./player.xlsx",
 					Usage: "data file path",
 				},
 			},
 			Action: func(cCtx *cli.Context) error {
-				return importPlayer(cCtx.String("data"), cCtx.String("database"))
+				return importPlayer(cCtx.String("data"), cCtx.String("db"))
 			},
 		}, {
 			Name:    "importReferee",
@@ -57,12 +57,12 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:  "data",
-					Value: "./referee.csv",
+					Value: "./referee.xlsx",
 					Usage: "data file path",
 				},
 			},
 			Action: func(cCtx *cli.Context) error {
-				return importReferee(cCtx.String("data"), cCtx.String("database"))
+				return importReferee(cCtx.String("data"), cCtx.String("db"))
 			},
 		}},
 	}
