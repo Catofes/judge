@@ -16,7 +16,7 @@ func (s *server) bindHandler() {
 	admin := s.e.Group("/admin")
 	admin.Use(s.adminMiddleware)
 	admin.GET("/referee", s.listReferees)
-	admin.GET("/referee/:id", s.listReferee)
+	admin.GET("/referee/:id/", s.listRefereeVotes)
 	admin.GET("/switch/:id", s.playerSwitch)
 }
 
@@ -134,7 +134,7 @@ func (s *server) listReferees(c echo.Context) error {
 	return cc.JSON(200, referees)
 }
 
-func (s *server) listReferee(c echo.Context) error {
+func (s *server) listRefereeVotes(c echo.Context) error {
 	cc := c.(*CustomContext)
 	votes := make([]Vote, 0)
 	if id, err := strconv.Atoi(cc.Param("id")); err != nil {
