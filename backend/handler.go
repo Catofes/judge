@@ -16,7 +16,8 @@ func (s *server) bindHandler() {
 }
 
 func (s *server) checkLogin(c echo.Context) error {
-	return c.NoContent(204)
+	cc := c.(CustomContext)
+	return c.JSON(200, cc.referee)
 }
 
 func (s *server) getRefereeInfo(c echo.Context) error {

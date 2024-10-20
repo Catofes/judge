@@ -52,10 +52,10 @@ func (s *server) authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		cc := c.(CustomContext)
 		cc.referee = &Referee{}
-		if key, err := cc.Cookie("key"); err != nil {
+		if key := cc.Request().Header.Get("key"); key == "" {
 			return echo.ErrForbidden
 		} else {
-			cc.referee.Key = key.Value
+			cc.referee.Key = key
 			if cc.referee.Key == "" {
 				return echo.ErrForbidden
 			}
