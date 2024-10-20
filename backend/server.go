@@ -67,3 +67,13 @@ func (s *server) authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 		return next(cc)
 	}
 }
+
+func (s *server) adminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	return func(c echo.Context) error {
+		cc := c.(*CustomContext)
+		if !cc.referee.Admin {
+			return echo.ErrForbidden
+		}
+		return next(cc)
+	}
+}

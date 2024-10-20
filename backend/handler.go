@@ -13,7 +13,11 @@ func (s *server) bindHandler() {
 	s.e.GET("/player", s.listPlayers)
 	s.e.GET("/player/:id", s.getVote)
 	s.e.POST("/player/:id", s.vote)
-	s.e.GET("/admin/switch/:id", s.playerSwitch)
+	admin := s.e.Group("/admin")
+	admin.Use(s.adminMiddleware)
+	admin.GET("/referee", s.listReferees)
+	admin.GET("/referee/:id", s.listReferee)
+	admin.GET("/switch/:id", s.playerSwitch)
 }
 
 func (s *server) checkLogin(c echo.Context) error {
@@ -76,6 +80,9 @@ func (s *server) vote(c echo.Context) error {
 	if player.Name == "" {
 		return echo.ErrNotFound
 	}
+	if !player.Enable {
+		return echo.ErrForbidden
+	}
 	vote := &Vote{
 		PlayerID: player.ID,
 		VoteBy:   int(cc.referee.ID),
@@ -97,12 +104,9 @@ func (s *server) vote(c echo.Context) error {
 
 func (s *server) playerSwitch(c echo.Context) error {
 	cc := c.(*CustomContext)
-	if !cc.referee.Admin {
-		return echo.ErrForbidden
-	}
 	player := &Player{}
 	if id, err := strconv.Atoi(cc.Param("id")); err != nil {
-		return echo.ErrForbidden
+		return echo.ErrBadRequest
 	} else {
 		player.ID = uint(id)
 	}
@@ -120,5 +124,23 @@ func (s *server) playerSwitch(c echo.Context) error {
 		return echo.ErrBadGateway
 	} else {
 		return cc.JSON(200, player)
+	}
+}
+
+func (s *server) listReferees(c echo.Context) error {
+	cc := c.(*CustomContext)
+	referees := make([]Referee, 0)
+	cc.db.Find(&referees)
+	return cc.JSON(200, referees)
+}
+
+func (s *server) listReferee(c echo.Context) error {
+	cc := c.(*CustomContext)
+	votes := make([]Vote, 0)
+	if id, err := strconv.Atoi(cc.Param("id")); err != nil {
+		return echo.ErrBadRequest
+	} else {
+		cc.db.Where("vote_by=?", id).Find(&votes)
+		return cc.JSON(200, votes)
 	}
 }
