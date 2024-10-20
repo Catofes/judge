@@ -1,6 +1,8 @@
 package main
 
-import "gorm.io/gorm"
+import (
+	"gorm.io/gorm"
+)
 
 type Player struct {
 	gorm.Model
@@ -11,9 +13,7 @@ type Player struct {
 
 func (s *Player) GetScore() []Vote {
 	fromMain := make([]Vote, 0)
-	other := Vote{
-		VoteBy: -1,
-	}
+	other := Vote{}
 	count := 0
 	for _, v := range s.Votes {
 		if v.IsMain {
@@ -33,7 +33,7 @@ func (s *Player) GetScore() []Vote {
 		other.Scores.Third /= count
 		other.Scores.Fourth /= count
 		other.Scores.Fifth /= count
+		fromMain = append(fromMain, other)
 	}
-	fromMain = append(fromMain, other)
 	return fromMain
 }

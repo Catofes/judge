@@ -21,15 +21,15 @@ func (s *server) checkLogin(c echo.Context) error {
 }
 
 func (s *server) getRefereeInfo(c echo.Context) error {
-	cc := c.(CustomContext)
+	cc := c.(*CustomContext)
 	cc.referee.Key = ""
 	return cc.JSON(200, cc.referee)
 }
 
 func (s *server) listPlayers(c echo.Context) error {
-	cc := c.(CustomContext)
+	cc := c.(*CustomContext)
 	Players := make([]Player, 0)
-	if result := cc.db.Find(&Players); result.Error != nil {
+	if result := cc.db.Model(&Player{}).Preload("Votes").Find(&Players); result.Error != nil {
 		log.Printf("db error: %s", result.Error)
 		return result.Error
 	} else {
@@ -47,7 +47,7 @@ func (s *server) listPlayers(c echo.Context) error {
 }
 
 func (s *server) getVote(c echo.Context) error {
-	cc := c.(CustomContext)
+	cc := c.(*CustomContext)
 	vote := &Vote{
 		VoteBy: int(cc.referee.ID),
 	}
@@ -56,7 +56,7 @@ func (s *server) getVote(c echo.Context) error {
 	} else {
 		vote.PlayerID = uint(id)
 	}
-	cc.db.First(vote)
+	cc.db.Where(vote).First(vote)
 	if vote.ID != 0 {
 		return cc.JSON(200, vote)
 	} else {
@@ -65,7 +65,7 @@ func (s *server) getVote(c echo.Context) error {
 }
 
 func (s *server) vote(c echo.Context) error {
-	cc := c.(CustomContext)
+	cc := c.(*CustomContext)
 	player := &Player{}
 	if id, err := strconv.Atoi(cc.Param("id")); err != nil {
 		return echo.ErrForbidden
@@ -80,7 +80,7 @@ func (s *server) vote(c echo.Context) error {
 		PlayerID: player.ID,
 		VoteBy:   int(cc.referee.ID),
 	}
-	cc.db.First(vote)
+	cc.db.Where(vote).First(vote)
 	score := Score{}
 	score.loadFromForm(cc)
 	vote.Scores = score
@@ -96,7 +96,7 @@ func (s *server) vote(c echo.Context) error {
 }
 
 func (s *server) playerSwitch(c echo.Context) error {
-	cc := c.(CustomContext)
+	cc := c.(*CustomContext)
 	if !cc.referee.Admin {
 		return echo.ErrForbidden
 	}

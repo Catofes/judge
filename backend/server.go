@@ -50,7 +50,7 @@ func (s *server) dbMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 func (s *server) authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
-		cc := c.(CustomContext)
+		cc := c.(*CustomContext)
 		cc.referee = &Referee{}
 		if key := cc.Request().Header.Get("key"); key == "" {
 			return echo.ErrForbidden
@@ -59,7 +59,7 @@ func (s *server) authMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			if cc.referee.Key == "" {
 				return echo.ErrForbidden
 			}
-			cc.db.First(cc.referee)
+			cc.db.Where(cc.referee).First(cc.referee)
 			if cc.referee.ID == 0 {
 				return echo.ErrNotFound
 			}

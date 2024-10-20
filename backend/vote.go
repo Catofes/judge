@@ -15,7 +15,7 @@ type Score struct {
 	Fifth  int
 }
 
-func (s *Score) loadFromForm(cc CustomContext) {
+func (s *Score) loadFromForm(cc *CustomContext) {
 	s.First, _ = strconv.Atoi(cc.FormValue("First"))
 	s.Second, _ = strconv.Atoi(cc.FormValue("Second"))
 	s.Third, _ = strconv.Atoi(cc.FormValue("Third"))
