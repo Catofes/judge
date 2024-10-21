@@ -23,14 +23,20 @@ func main() {
 			Flags: []cli.Flag{
 				&cli.StringFlag{
 					Name:  "listen",
-					Value: "[::]:10080",
+					Value: "[::]:8080",
 					Usage: "listen host",
+				},
+				&cli.StringFlag{
+					Name:  "static",
+					Value: "web",
+					Usage: "static file path",
 				},
 			},
 			Action: func(cCtx *cli.Context) error {
 				s := server{
-					Listen:   cCtx.String("listen"),
-					Database: cCtx.String("db"),
+					Listen:         cCtx.String("listen"),
+					Database:       cCtx.String("db"),
+					StaticFilePath: cCtx.String("static"),
 				}
 				s.init()
 				s.serve()

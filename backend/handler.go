@@ -5,15 +5,23 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo/v4"
+	"github.com/labstack/echo/v4/middleware"
 )
 
 func (s *server) bindHandler() {
-	s.e.HEAD("/", s.checkLogin)
-	s.e.GET("/", s.getRefereeInfo)
-	s.e.GET("/player", s.listPlayers)
-	s.e.GET("/player/:id", s.getVote)
-	s.e.POST("/player/:id", s.vote)
-	admin := s.e.Group("/admin")
+	s.e.Use(middleware.CORS())
+	s.e.Use(s.nocacheMiddleware)
+	s.e.Static("/", s.StaticFilePath)
+	s.e.File("/", s.StaticFilePath+"/index.html")
+	api := s.e.Group("/api")
+	api.Use(s.dbMiddleware)
+	api.Use(s.authMiddleware)
+	api.HEAD("/", s.checkLogin)
+	api.GET("/", s.getRefereeInfo)
+	api.GET("/player", s.listPlayers)
+	api.GET("/player/:id", s.getVote)
+	api.POST("/player/:id", s.vote)
+	admin := api.Group("/admin")
 	admin.Use(s.adminMiddleware)
 	admin.GET("/referee", s.listReferees)
 	admin.GET("/referee/:id/", s.listRefereeVotes)

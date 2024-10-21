@@ -1,13 +1,95 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>评分系统</title>
-  </head>
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+
+<head>
+  <meta charset="utf-8">
+  <meta name="Vote" content="width=device-width, initial-scale=1">
+  <title>评价系统</title>
+  <link href="assets/bootstrap.min.css" rel="stylesheet">
+  <link href="assets/main.css" rel="stylesheet">
+</head>
+
+<body>
+  <nav class="navbar navbar-expand-md bg-body-tertiary">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#">投票系统</a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarSupportedContent">
+        <ul class="navbar-nav me-auto mb-2 mb-md-0 ms-md-3">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="index.html">主页</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="#">状态</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="login.html">登录</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+  <div class="container mt-5">
+    <h3>登录</h3>
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">序号</th>
+          <th scope="col">姓名</th>
+          <th scope="col">状态</th>
+          <th scope="col">链接</th>
+        </tr>
+      </thead>
+    </table>
+  </div>
+
+  <script src="assets/bootstrap.bundle.min.js"></script>
+  <script src="assets/jquery.min.js"></script>
+  <script src="assets/main.js"></script>
+  <script>
+    function _checkLogin() {
+      checkLogin().catch((error) => {
+        console.log(error);
+        window.location.href = "login.html"
+      })
+    }
+
+    async function _renderPlayer() {
+      try {
+        const players = await getPlayers();
+        const tbodyDom = document.createElement("tbody");
+        players.forEach((player) => {
+          playerDom = document.createElement("tr");
+          innerHTML = ""
+          innerHTML += "<th scope=\"col\">" + player["ID"] + "</th>";
+          innerHTML += "<th scope=\"col\">" + player["Name"] + "</th>";
+          innerHTML += "<th scope=\"col\" id=\"playerStatus" + player["ID"] + "\">"
+            + (player["Enable"] ? "已开始" : "未开始") + "</th>";
+          innerHTML += "<th scope=\"col\" id=\"playerButton" + player["ID"] + "\">"
+            + "<button class=\"btn btn-primary " + (player["Enable"] ? "" : "disabled") + " \" onclick=_vote(" + player["ID"] + "\")>投票</button></th>";
+          playerDom.innerHTML = innerHTML;
+          tbodyDom.appendChild(playerDom)
+        });
+        document.querySelector(".table").appendChild(tbodyDom);
+      } catch (e) {
+        console.log(e)
+      }
+    }
+
+    function _vote(id) {
+      window.location.href = "vote.html?id=" + id;
+    }
+
+    (() => {
+      _checkLogin();
+      _renderPlayer();
+    })()
+  </script>
+</body>
+
 </html>

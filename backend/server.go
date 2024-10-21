@@ -12,10 +12,11 @@ type CustomContext struct {
 }
 
 type server struct {
-	e        *echo.Echo
-	d        *db
-	Listen   string
-	Database string
+	e              *echo.Echo
+	d              *db
+	Listen         string
+	Database       string
+	StaticFilePath string
 }
 
 func (s *server) init() {
@@ -29,8 +30,6 @@ func (s *server) serve() {
 }
 
 func (s *server) bind() {
-	s.e.Use(s.dbMiddleware)
-	s.e.Use(s.authMiddleware)
 	s.bindHandler()
 }
 
@@ -75,5 +74,25 @@ func (s *server) adminMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			return echo.ErrForbidden
 		}
 		return next(cc)
+	}
+}
+
+func (s *server) nocacheMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
+	Ext := func(path string) string {
+		for i := len(path) - 1; i >= 0 && path[i] != '/'; i-- {
+			if path[i] == '.' {
+				return path[i:]
+			}
+		}
+		return ""
+	}
+	return func(c echo.Context) error {
+		if Ext(c.Request().URL.Path); false {
+			//if end := Ext(c.Request().URL.Path); end == "js" || end == "html" || end == "css" {
+			c.Response().Header().Set("Cache-Control", "max-age=120")
+		} else {
+			c.Response().Header().Set("Cache-Control", "no-cache")
+		}
+		return next(c)
 	}
 }

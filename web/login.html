@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="Vote" content="width=device-width, initial-scale=1">
+    <title>评价系统</title>
+    <link href="assets/bootstrap.min.css" rel="stylesheet">
+    <link href="assets/main.css" rel="stylesheet">
+</head>
+
+<body>
+    <nav class="navbar navbar-expand-md bg-body-tertiary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">投票系统</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+                data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false"
+                aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav me-auto mb-2 mb-md-0 ms-md-3">
+                    <li class="nav-item">
+                        <a class="nav-link" aria-current="page" href="index.html">主页</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">状态</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" aria-current="page" href="login.html">登录</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <h3>登录</h3>
+        <div id="logingSuccessInfo" hidden>
+            <div id="loginSuccessName" class="alert alert-success" role="alert"></div>
+            <button type="login" class="btn btn-primary" onclick=_logout()>登出</button>
+        </div>
+        <div id="logingFailedInfo" hidden class="alert alert-danger" role="alert">
+            登陆失败
+        </div>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="inputIdNumber" class="form-label">输入身份证号码</label>
+                <input type="text" class="form-control" id="idNumberInput">
+            </div>
+            <button type="login" class="btn btn-primary" onclick=_login()>登录</button>
+        </form>
+    </div>
+
+    <script src="assets/bootstrap.bundle.min.js"></script>
+    <script src="assets/jquery.min.js"></script>
+    <script src="assets/main.js"></script>
+    <script>
+        function _checkLogin() {
+            checkLogin()
+                .then((data) => {
+                    console.log("登录成功！");
+                    document.querySelector("#loginSuccessName").textContent = data.Name + "，您已登录。";
+                    document.querySelector("#loginForm").hidden = true;
+                    document.querySelector("#logingFailedInfo").hidden = true;
+                    document.querySelector("#logingSuccessInfo").hidden = false;
+                })
+                .catch((error) => {
+                    console.log("登录失败！");
+                    document.querySelector("#loginForm").hidden = !true;
+                    document.querySelector("#logingFailedInfo").hidden = !true;
+                    document.querySelector("#logingSuccessInfo").hidden = !false;
+                })
+        }
+
+        function _login() {
+            key = document.querySelector("#idNumberInput").value;
+            localStorage.setItem("key", key);
+            _checkLogin();
+        }
+
+        function _logout() {
+            localStorage.setItem("key", "");
+            _checkLogin();
+        }
+
+        (() => {
+            _checkLogin();
+        })();
+    </script>
+</body>
+
+</html>

@@ -9,4 +9,4 @@ import: all
 	build/backend importReferee --data testdata/评委数据.xlsx
 
 run: all
-	build/backend run
+	build/backend run --listen [::]:8080
